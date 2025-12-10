@@ -1,4 +1,5 @@
 const SHEET_ID = '1bR2dlX_sHTaxMMlmeze3sHYWryRyVsKDKE_tJUxJS70';
+const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwlW5wHBUsexlBtuEmdMMBRFNxtcU6WeZpJBf0pKmPSveZTwxPsF9ofxb98WMM-YKDC/exec';
 
 export interface SheetRow {
   rowIndex: number;
@@ -27,6 +28,20 @@ export async function fetchSheetData(): Promise<{ headers: string[]; rows: Sheet
   }));
   
   return { headers, rows };
+}
+
+export async function saveSheetRow(rowIndex: number, data: string[]): Promise<boolean> {
+  const response = await fetch(APPS_SCRIPT_URL, {
+    method: 'POST',
+    mode: 'no-cors',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ rowIndex, data }),
+  });
+  
+  // Due to no-cors mode, we can't read the response, but if no error thrown, assume success
+  return true;
 }
 
 function parseCSV(text: string): string[][] {
@@ -65,7 +80,6 @@ function parseCSV(text: string): string[][] {
 }
 
 export function getEmailColumnIndex(headers: string[]): number {
-  // Find column A (first column, index 0)
   return 0;
 }
 
