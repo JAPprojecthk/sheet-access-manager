@@ -1,13 +1,12 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/hooks/useAuth';
-import { fetchSheetData, SheetRow, canEditRow, getEmailColumnIndex } from '@/lib/googleSheets';
+import { fetchSheetData, SheetRow } from '@/lib/googleSheets';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { useToast } from '@/hooks/use-toast';
-import { Loader2, RefreshCw, Edit2, Save, X, LogOut, AlertCircle } from 'lucide-react';
-import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Loader2, RefreshCw, Edit2, Save, X, LogOut } from 'lucide-react';
 
 const SpreadsheetEditor = () => {
   const { user, signOut } = useAuth();
@@ -39,7 +38,6 @@ const SpreadsheetEditor = () => {
     loadData();
   }, []);
 
-  const emailColumnIndex = getEmailColumnIndex(headers);
   const userEmail = user?.email || '';
 
   const handleEdit = (rowIndex: number, data: string[]) => {
@@ -96,36 +94,37 @@ const SpreadsheetEditor = () => {
           </div>
         </CardHeader>
         <CardContent>
-          <Alert className="mb-4">
-            <AlertCircle className="h-4 w-4" />
-            <AlertDescription>
-              只有 A 列電郵與您登入電郵相符的列才可以編輯
-            </AlertDescription>
-          </Alert>
-          
           <div className="overflow-x-auto">
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead className="w-20">操作</TableHead>
                   {headers.map((header, index) => (
                     <TableHead key={index}>{header || `欄 ${String.fromCharCode(65 + index)}`}</TableHead>
                   ))}
+                  <TableHead className="w-24 text-right">操作</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {rows.map((row) => {
-                  const rowEmail = row.data[emailColumnIndex] || '';
-                  const isEditable = canEditRow(rowEmail, userEmail);
                   const isEditing = editingRow === row.rowIndex;
 
                   return (
-                    <TableRow 
-                      key={row.rowIndex}
-                      className={isEditable ? 'bg-accent/30' : ''}
-                    >
-                      <TableCell>
-                        {isEditable && !isEditing && (
+                    <TableRow key={row.rowIndex}>
+                      {row.data.map((cell, colIndex) => (
+                        <TableCell key={colIndex}>
+                          {isEditing ? (
+                            <Input
+                              value={editedData[colIndex] || ''}
+                              onChange={(e) => handleInputChange(colIndex, e.target.value)}
+                              className="min-w-[100px]"
+                            />
+                          ) : (
+                            cell
+                          )}
+                        </TableCell>
+                      ))}
+                      <TableCell className="text-right">
+                        {!isEditing && (
                           <Button
                             variant="ghost"
                             size="sm"
@@ -135,7 +134,7 @@ const SpreadsheetEditor = () => {
                           </Button>
                         )}
                         {isEditing && (
-                          <div className="flex gap-1">
+                          <div className="flex gap-1 justify-end">
                             <Button variant="ghost" size="sm" onClick={handleSave}>
                               <Save className="h-4 w-4 text-green-600" />
                             </Button>
@@ -145,20 +144,6 @@ const SpreadsheetEditor = () => {
                           </div>
                         )}
                       </TableCell>
-                      {row.data.map((cell, colIndex) => (
-                        <TableCell key={colIndex}>
-                          {isEditing ? (
-                            <Input
-                              value={editedData[colIndex] || ''}
-                              onChange={(e) => handleInputChange(colIndex, e.target.value)}
-                              className="min-w-[100px]"
-                              disabled={colIndex === emailColumnIndex}
-                            />
-                          ) : (
-                            cell
-                          )}
-                        </TableCell>
-                      ))}
                     </TableRow>
                   );
                 })}
