@@ -140,19 +140,28 @@ const SpreadsheetEditor = () => {
 
                   return (
                     <TableRow key={row.rowIndex}>
-                      {row.data.map((cell, colIndex) => (
-                        <TableCell key={colIndex}>
-                          {isEditing ? (
-                            <Input
-                              value={editedData[colIndex] || ''}
-                              onChange={(e) => handleInputChange(colIndex, e.target.value)}
-                              className="min-w-[100px]"
-                            />
-                          ) : (
-                            cell
-                          )}
-                        </TableCell>
-                      ))}
+                      {row.data.map((cell, colIndex) => {
+                        // Truncate IGlink and apikey columns to first 10 characters
+                        const headerName = headers[colIndex]?.toLowerCase() || '';
+                        const shouldTruncate = headerName.includes('iglink') || headerName.includes('apikey');
+                        const displayValue = shouldTruncate && cell && cell.length > 10 
+                          ? cell.substring(0, 10) + '...' 
+                          : cell;
+                        
+                        return (
+                          <TableCell key={colIndex}>
+                            {isEditing ? (
+                              <Input
+                                value={editedData[colIndex] || ''}
+                                onChange={(e) => handleInputChange(colIndex, e.target.value)}
+                                className="min-w-[100px]"
+                              />
+                            ) : (
+                              <span title={cell}>{displayValue}</span>
+                            )}
+                          </TableCell>
+                        );
+                      })}
                       <TableCell className="text-right">
                         {!isEditing && (
                           <Button
