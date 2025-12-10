@@ -40,6 +40,12 @@ const SpreadsheetEditor = () => {
   }, []);
 
   const userEmail = user?.email || '';
+  
+  // Filter rows to only show rows where email (column A) matches logged-in user's email
+  const filteredRows = rows.filter(row => {
+    const rowEmail = row.data[0]?.toLowerCase().trim() || '';
+    return rowEmail === userEmail.toLowerCase().trim();
+  });
 
   const handleEdit = (rowIndex: number, data: string[]) => {
     setEditingRow(rowIndex);
@@ -129,7 +135,7 @@ const SpreadsheetEditor = () => {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {rows.map((row) => {
+                {filteredRows.map((row) => {
                   const isEditing = editingRow === row.rowIndex;
 
                   return (
@@ -175,9 +181,9 @@ const SpreadsheetEditor = () => {
             </Table>
           </div>
           
-          {rows.length === 0 && (
+          {filteredRows.length === 0 && (
             <p className="text-center text-muted-foreground py-8">
-              沒有資料
+              沒有與您電郵相符的資料
             </p>
           )}
         </CardContent>
