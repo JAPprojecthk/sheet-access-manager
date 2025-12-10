@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/hooks/useAuth';
-import { fetchSheetData, SheetRow } from '@/lib/googleSheets';
+import { fetchSheetData, SheetRow, saveSheetRow } from '@/lib/googleSheets';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -16,6 +16,7 @@ const SpreadsheetEditor = () => {
   const [loading, setLoading] = useState(true);
   const [editingRow, setEditingRow] = useState<number | null>(null);
   const [editedData, setEditedData] = useState<string[]>([]);
+  const [saving, setSaving] = useState(false);
 
   const loadData = async () => {
     setLoading(true);
@@ -46,11 +47,34 @@ const SpreadsheetEditor = () => {
   };
 
   const handleSave = async () => {
-    toast({
-      title: '提示',
-      description: '由於 Google 試算表是唯讀模式，編輯功能需要連接 Google Sheets API 才能儲存變更。目前只能查看資料。',
-    });
-    setEditingRow(null);
+    if (editingRow === null) return;
+    
+    setSaving(true);
+    try {
+      await saveSheetRow(editingRow, editedData);
+      
+      // Update local state
+      setRows(rows.map(row => 
+        row.rowIndex === editingRow 
+          ? { ...row, data: editedData }
+          : row
+      ));
+      
+      toast({
+        title: '成功',
+        description: '資料已儲存',
+      });
+      setEditingRow(null);
+      setEditedData([]);
+    } catch (error) {
+      toast({
+        title: '錯誤',
+        description: '儲存失敗，請重試',
+        variant: 'destructive',
+      });
+    } finally {
+      setSaving(false);
+    }
   };
 
   const handleCancel = () => {
@@ -135,8 +159,8 @@ const SpreadsheetEditor = () => {
                         )}
                         {isEditing && (
                           <div className="flex gap-1 justify-end">
-                            <Button variant="ghost" size="sm" onClick={handleSave}>
-                              <Save className="h-4 w-4 text-green-600" />
+                            <Button variant="ghost" size="sm" onClick={handleSave} disabled={saving}>
+                              {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4 text-green-600" />}
                             </Button>
                             <Button variant="ghost" size="sm" onClick={handleCancel}>
                               <X className="h-4 w-4 text-destructive" />
