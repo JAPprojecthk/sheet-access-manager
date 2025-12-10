@@ -8,6 +8,8 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { useToast } from '@/hooks/use-toast';
 import { Loader2, RefreshCw, Edit2, Save, X, LogOut } from 'lucide-react';
 
+const ACCESS_PASSWORD = '12345678';
+
 const SpreadsheetEditor = () => {
   const { user, signOut } = useAuth();
   const { toast } = useToast();
@@ -17,6 +19,8 @@ const SpreadsheetEditor = () => {
   const [editingRow, setEditingRow] = useState<number | null>(null);
   const [editedData, setEditedData] = useState<string[]>([]);
   const [saving, setSaving] = useState(false);
+  const [isUnlocked, setIsUnlocked] = useState(false);
+  const [passwordInput, setPasswordInput] = useState('');
 
   const loadData = async () => {
     setLoading(true);
@@ -94,10 +98,50 @@ const SpreadsheetEditor = () => {
     setEditedData(newData);
   };
 
+  const handlePasswordSubmit = () => {
+    if (passwordInput === ACCESS_PASSWORD) {
+      setIsUnlocked(true);
+      toast({
+        title: '成功',
+        description: '密碼正確，已解鎖',
+      });
+    } else {
+      toast({
+        title: '錯誤',
+        description: '密碼錯誤',
+        variant: 'destructive',
+      });
+    }
+  };
+
   if (loading) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-background">
         <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    );
+  }
+
+  if (!isUnlocked) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-background p-4">
+        <Card className="w-full max-w-md">
+          <CardHeader>
+            <CardTitle>請輸入密碼</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <Input
+              type="password"
+              placeholder="輸入密碼"
+              value={passwordInput}
+              onChange={(e) => setPasswordInput(e.target.value)}
+              onKeyDown={(e) => e.key === 'Enter' && handlePasswordSubmit()}
+            />
+            <Button onClick={handlePasswordSubmit} className="w-full">
+              確認
+            </Button>
+          </CardContent>
+        </Card>
       </div>
     );
   }
