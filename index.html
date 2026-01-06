@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="zh-HK">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Sheet Access Manager | 試算表存取管理</title>
+    <meta name="description" content="Sheet Access Manager：以密碼保護方式查看及編輯 Google 試算表資料。" />
+    <link rel="canonical" href="https://japprojecthk.github.io/sheet-access-manager/" />
+    <style>
+      * { margin: 0; padding: 0; box-sizing: border-box; }
+      body {
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+        min-height: 100vh;
+        display: grid;
+        place-items: center;
+        padding: 20px;
+        background:
+          radial-gradient(1200px 600px at 20% 10%, rgba(255,255,255,0.22), rgba(255,255,255,0) 60%),
+          radial-gradient(900px 500px at 80% 20%, rgba(255,255,255,0.14), rgba(255,255,255,0) 60%),
+          linear-gradient(135deg, #0f172a 0%, #312e81 45%, #6d28d9 100%);
+        color: #f8fafc;
+      }
+      .wrap {
+        width: 100%;
+        max-width: 980px;
+        border-radius: 20px;
+        overflow: hidden;
+        box-shadow: 0 30px 90px rgba(0,0,0,0.45);
+        background: rgba(255,255,255,0.08);
+        border: 1px solid rgba(255,255,255,0.16);
+        backdrop-filter: blur(14px);
+      }
+      header {
+        padding: 28px 28px 0;
+      }
+      .brand {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        font-weight: 700;
+        letter-spacing: 0.2px;
+        color: rgba(255,255,255,0.92);
+      }
+      .badge {
+        width: 42px;
+        height: 42px;
+        display: grid;
+        place-items: center;
+        border-radius: 14px;
+        background: rgba(255,255,255,0.12);
+        border: 1px solid rgba(255,255,255,0.18);
+        position: relative;
+        overflow: hidden;
+      }
+      .badge::before {
+        content: "";
+        position: absolute;
+        inset: -60px;
+        background: conic-gradient(from 180deg, rgba(255,255,255,0), rgba(255,255,255,0.22), rgba(255,255,255,0));
+        animation: spin 6s linear infinite;
+      }
+      .badge span {
+        position: relative;
+        font-size: 18px;
+      }
+      @keyframes spin { to { transform: rotate(360deg); } }
+
+      main { padding: 22px 28px 30px; }
+      h1 {
+        font-size: clamp(28px, 4vw, 44px);
+        line-height: 1.06;
+        margin: 18px 0 12px;
+        letter-spacing: -0.02em;
+      }
+      p {
+        font-size: 16px;
+        line-height: 1.7;
+        color: rgba(255,255,255,0.78);
+        max-width: 68ch;
+      }
+      .cta {
+        margin-top: 22px;
+        display: flex;
+        gap: 12px;
+        flex-wrap: wrap;
+      }
+      .btn {
+        padding: 12px 18px;
+        border-radius: 12px;
+        border: 1px solid rgba(255,255,255,0.18);
+        background: rgba(255,255,255,0.10);
+        color: rgba(255,255,255,0.92);
+        text-decoration: none;
+        font-weight: 600;
+        transition: transform 0.15s ease, background 0.15s ease;
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
+      }
+      .btn:hover { transform: translateY(-1px); background: rgba(255,255,255,0.16); }
+      .btn.primary {
+        background: linear-gradient(135deg, rgba(99,102,241,0.92), rgba(168,85,247,0.92));
+        border-color: rgba(255,255,255,0.22);
+      }
+      .btn.primary:hover { background: linear-gradient(135deg, rgba(99,102,241,1), rgba(168,85,247,1)); }
+      .grid {
+        margin-top: 24px;
+        display: grid;
+        gap: 12px;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+      }
+      .card {
+        padding: 14px 14px;
+        border-radius: 14px;
+        background: rgba(255,255,255,0.08);
+        border: 1px solid rgba(255,255,255,0.14);
+      }
+      .card h2 {
+        font-size: 14px;
+        color: rgba(255,255,255,0.88);
+        margin-bottom: 6px;
+        letter-spacing: 0.2px;
+      }
+      .card div {
+        font-size: 13px;
+        color: rgba(255,255,255,0.70);
+        line-height: 1.55;
+      }
+      footer {
+        padding: 18px 28px 26px;
+        color: rgba(255,255,255,0.55);
+        font-size: 12px;
+        border-top: 1px solid rgba(255,255,255,0.10);
+      }
+      @media (max-width: 860px) {
+        .grid { grid-template-columns: 1fr; }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="wrap">
+      <header>
+        <div class="brand">
+          <div class="badge" aria-hidden="true"><span>🐾</span></div>
+          <div>JAPProjectHK</div>
+        </div>
+      </header>
+      <main>
+        <h1>Sheet Access Manager</h1>
+        <p>
+          呢個網站用嚟查看/編輯 Google 試算表資料。請先進入管理頁，再輸入密碼解鎖內容。
+        </p>
+        <div class="cta">
+          <a class="btn primary" href="./manager.html">🔐 進入管理頁</a>
+          <a class="btn" href="https://github.com/japprojecthk/sheet-access-manager" target="_blank" rel="noreferrer">↗ GitHub</a>
+        </div>
+        <section class="grid" aria-label="功能簡介">
+          <article class="card">
+            <h2>密碼保護</h2>
+            <div>管理頁需要輸入密碼先可以顯示資料。</div>
+          </article>
+          <article class="card">
+            <h2>顯示優化</h2>
+            <div>IGlink / apikey 只顯示頭 10 個字母，完整值 hover 可見。</div>
+          </article>
+          <article class="card">
+            <h2>即時編輯</h2>
+            <div>可直接在表格內編輯及儲存（透過 Apps Script）。</div>
+          </article>
+        </section>
+      </main>
+      <footer>
+        © <span id="y"></span> Sheet Access Manager
+      </footer>
+    </div>
+    <script>
+      document.getElementById('y').textContent = String(new Date().getFullYear());
+    </script>
+  </body>
+</html>
