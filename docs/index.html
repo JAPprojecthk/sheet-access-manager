@@ -1,0 +1,529 @@
+<!DOCTYPE html>
+<html lang="zh-HK">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sheet Access Manager</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        
+        .container {
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            width: 100%;
+            max-width: 1200px;
+            overflow: hidden;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            color: white;
+            padding: 24px 32px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 16px;
+        }
+        
+        .header h1 {
+            font-size: 24px;
+            font-weight: 600;
+        }
+        
+        .header-actions {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+        
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            transition: all 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .btn-primary {
+            background: #667eea;
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background: #5a6fd6;
+        }
+        
+        .btn-secondary {
+            background: rgba(255,255,255,0.1);
+            color: white;
+            border: 1px solid rgba(255,255,255,0.2);
+        }
+        
+        .btn-secondary:hover {
+            background: rgba(255,255,255,0.2);
+        }
+        
+        .btn-success {
+            background: #10b981;
+            color: white;
+        }
+        
+        .btn-danger {
+            background: #ef4444;
+            color: white;
+        }
+        
+        .content {
+            padding: 24px 32px;
+        }
+        
+        /* Password Screen */
+        .password-screen {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 400px;
+            text-align: center;
+        }
+        
+        .password-screen h2 {
+            color: #1a1a2e;
+            margin-bottom: 24px;
+            font-size: 28px;
+        }
+        
+        .password-form {
+            width: 100%;
+            max-width: 320px;
+        }
+        
+        .input-field {
+            width: 100%;
+            padding: 14px 16px;
+            border: 2px solid #e5e7eb;
+            border-radius: 10px;
+            font-size: 16px;
+            margin-bottom: 16px;
+            transition: border-color 0.2s;
+        }
+        
+        .input-field:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        
+        .error-message {
+            color: #ef4444;
+            font-size: 14px;
+            margin-bottom: 12px;
+            display: none;
+        }
+        
+        /* Table Styles */
+        .table-container {
+            overflow-x: auto;
+            border-radius: 12px;
+            border: 1px solid #e5e7eb;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 14px;
+        }
+        
+        th {
+            background: #f8fafc;
+            color: #475569;
+            font-weight: 600;
+            text-align: left;
+            padding: 14px 16px;
+            border-bottom: 2px solid #e5e7eb;
+            white-space: nowrap;
+        }
+        
+        td {
+            padding: 12px 16px;
+            border-bottom: 1px solid #f1f5f9;
+            color: #334155;
+        }
+        
+        tr:hover {
+            background: #f8fafc;
+        }
+        
+        .truncate {
+            max-width: 120px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+        
+        .action-btns {
+            display: flex;
+            gap: 8px;
+            justify-content: flex-end;
+        }
+        
+        .btn-icon {
+            width: 36px;
+            height: 36px;
+            padding: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 8px;
+            border: none;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .btn-edit {
+            background: #f1f5f9;
+            color: #475569;
+        }
+        
+        .btn-edit:hover {
+            background: #e2e8f0;
+        }
+        
+        .edit-input {
+            width: 100%;
+            min-width: 100px;
+            padding: 8px 10px;
+            border: 1px solid #667eea;
+            border-radius: 6px;
+            font-size: 14px;
+        }
+        
+        .loading {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 300px;
+            color: #667eea;
+        }
+        
+        .spinner {
+            width: 48px;
+            height: 48px;
+            border: 4px solid #e5e7eb;
+            border-top-color: #667eea;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-bottom: 16px;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        
+        .no-data {
+            text-align: center;
+            padding: 60px 20px;
+            color: #64748b;
+        }
+        
+        .user-info {
+            font-size: 14px;
+            color: rgba(255,255,255,0.7);
+        }
+        
+        @media (max-width: 640px) {
+            .header {
+                padding: 16px 20px;
+            }
+            
+            .header h1 {
+                font-size: 18px;
+            }
+            
+            .content {
+                padding: 16px 20px;
+            }
+            
+            .btn {
+                padding: 8px 14px;
+                font-size: 13px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Password Screen -->
+        <div id="passwordScreen" class="content password-screen">
+            <h2>🔐 請輸入密碼</h2>
+            <div class="password-form">
+                <input type="password" id="passwordInput" class="input-field" placeholder="輸入密碼" autocomplete="off">
+                <div id="errorMsg" class="error-message">密碼錯誤，請重試</div>
+                <button onclick="checkPassword()" class="btn btn-primary" style="width: 100%;">確認</button>
+            </div>
+        </div>
+        
+        <!-- Main App -->
+        <div id="mainApp" style="display: none;">
+            <div class="header">
+                <div>
+                    <h1>📊 Sheet Access Manager</h1>
+                    <div class="user-info" id="userInfo"></div>
+                </div>
+                <div class="header-actions">
+                    <button onclick="loadData()" class="btn btn-secondary">🔄 重新載入</button>
+                    <button onclick="logout()" class="btn btn-secondary">🚪 登出</button>
+                </div>
+            </div>
+            <div class="content">
+                <div id="loadingState" class="loading">
+                    <div class="spinner"></div>
+                    <span>載入中...</span>
+                </div>
+                <div id="tableContainer" class="table-container" style="display: none;">
+                    <table>
+                        <thead id="tableHead"></thead>
+                        <tbody id="tableBody"></tbody>
+                    </table>
+                </div>
+                <div id="noData" class="no-data" style="display: none;">
+                    📭 沒有找到資料
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const SHEET_ID = '1bR2dlX_sHTaxMMlmeze3sHYWryRyVsKDKE_tJUxJS70';
+        const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwlW5wHBUsexlBtuEmdMMBRFNxtcU6WeZpJBf0pKmPSveZTwxPsF9ofxb98WMM-YKDC/exec';
+        const ACCESS_PASSWORD = '12345678';
+        
+        let headers = [];
+        let rows = [];
+        let editingRow = null;
+        let editedData = [];
+        
+        // Password check
+        function checkPassword() {
+            const input = document.getElementById('passwordInput').value;
+            const errorMsg = document.getElementById('errorMsg');
+            
+            if (input === ACCESS_PASSWORD) {
+                document.getElementById('passwordScreen').style.display = 'none';
+                document.getElementById('mainApp').style.display = 'block';
+                loadData();
+            } else {
+                errorMsg.style.display = 'block';
+                document.getElementById('passwordInput').value = '';
+            }
+        }
+        
+        // Enter key support
+        document.getElementById('passwordInput').addEventListener('keydown', function(e) {
+            if (e.key === 'Enter') checkPassword();
+        });
+        
+        // Logout
+        function logout() {
+            document.getElementById('mainApp').style.display = 'none';
+            document.getElementById('passwordScreen').style.display = 'flex';
+            document.getElementById('passwordInput').value = '';
+            document.getElementById('errorMsg').style.display = 'none';
+        }
+        
+        // Parse CSV
+        function parseCSV(text) {
+            const result = [];
+            const lines = text.split(/\r?\n/);
+            
+            for (const line of lines) {
+                if (line.trim() === '') continue;
+                
+                const row = [];
+                let current = '';
+                let inQuotes = false;
+                
+                for (let i = 0; i < line.length; i++) {
+                    const char = line[i];
+                    
+                    if (char === '"') {
+                        if (inQuotes && line[i + 1] === '"') {
+                            current += '"';
+                            i++;
+                        } else {
+                            inQuotes = !inQuotes;
+                        }
+                    } else if (char === ',' && !inQuotes) {
+                        row.push(current);
+                        current = '';
+                    } else {
+                        current += char;
+                    }
+                }
+                row.push(current);
+                result.push(row);
+            }
+            
+            return result;
+        }
+        
+        // Load data from Google Sheets
+        async function loadData() {
+            document.getElementById('loadingState').style.display = 'flex';
+            document.getElementById('tableContainer').style.display = 'none';
+            document.getElementById('noData').style.display = 'none';
+            
+            try {
+                const url = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/export?format=csv&gid=0`;
+                const response = await fetch(url);
+                
+                if (!response.ok) throw new Error('無法讀取試算表');
+                
+                const text = await response.text();
+                const lines = parseCSV(text);
+                
+                if (lines.length === 0) {
+                    document.getElementById('loadingState').style.display = 'none';
+                    document.getElementById('noData').style.display = 'block';
+                    return;
+                }
+                
+                headers = lines[0];
+                rows = lines.slice(1).map((data, index) => ({
+                    rowIndex: index + 2,
+                    data: data
+                }));
+                
+                renderTable();
+            } catch (error) {
+                console.error('Error loading data:', error);
+                alert('載入資料失敗: ' + error.message);
+            } finally {
+                document.getElementById('loadingState').style.display = 'none';
+            }
+        }
+        
+        // Render table
+        function renderTable() {
+            if (rows.length === 0) {
+                document.getElementById('noData').style.display = 'block';
+                return;
+            }
+            
+            document.getElementById('tableContainer').style.display = 'block';
+            
+            // Render headers
+            const thead = document.getElementById('tableHead');
+            thead.innerHTML = '<tr>' + 
+                headers.map((h, i) => `<th>${h || '欄 ' + String.fromCharCode(65 + i)}</th>`).join('') +
+                '<th style="text-align: right;">操作</th></tr>';
+            
+            // Render rows
+            const tbody = document.getElementById('tableBody');
+            tbody.innerHTML = rows.map((row, idx) => {
+                const isEditing = editingRow === row.rowIndex;
+                
+                const cells = row.data.map((cell, colIdx) => {
+                    const headerName = (headers[colIdx] || '').toLowerCase();
+                    const shouldTruncate = headerName.includes('iglink') || headerName.includes('apikey');
+                    
+                    if (isEditing) {
+                        return `<td><input type="text" class="edit-input" value="${escapeHtml(cell)}" onchange="updateCell(${colIdx}, this.value)"></td>`;
+                    } else {
+                        const displayValue = shouldTruncate && cell && cell.length > 10 
+                            ? cell.substring(0, 10) + '...' 
+                            : cell;
+                        return `<td><span class="${shouldTruncate ? 'truncate' : ''}" title="${escapeHtml(cell)}">${escapeHtml(displayValue)}</span></td>`;
+                    }
+                }).join('');
+                
+                const actionBtns = isEditing 
+                    ? `<td class="action-btns">
+                        <button class="btn-icon btn-success" onclick="saveRow()">💾</button>
+                        <button class="btn-icon btn-danger" onclick="cancelEdit()">✕</button>
+                       </td>`
+                    : `<td class="action-btns">
+                        <button class="btn-icon btn-edit" onclick="startEdit(${row.rowIndex}, ${idx})">✏️</button>
+                       </td>`;
+                
+                return `<tr>${cells}${actionBtns}</tr>`;
+            }).join('');
+        }
+        
+        // Escape HTML
+        function escapeHtml(text) {
+            if (!text) return '';
+            return text.replace(/&/g, '&amp;')
+                       .replace(/</g, '&lt;')
+                       .replace(/>/g, '&gt;')
+                       .replace(/"/g, '&quot;');
+        }
+        
+        // Start editing
+        function startEdit(rowIndex, dataIndex) {
+            editingRow = rowIndex;
+            editedData = [...rows[dataIndex].data];
+            renderTable();
+        }
+        
+        // Update cell value
+        function updateCell(colIdx, value) {
+            editedData[colIdx] = value;
+        }
+        
+        // Cancel edit
+        function cancelEdit() {
+            editingRow = null;
+            editedData = [];
+            renderTable();
+        }
+        
+        // Save row
+        async function saveRow() {
+            try {
+                await fetch(APPS_SCRIPT_URL, {
+                    method: 'POST',
+                    mode: 'no-cors',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ rowIndex: editingRow, data: editedData })
+                });
+                
+                // Update local data
+                const rowIdx = rows.findIndex(r => r.rowIndex === editingRow);
+                if (rowIdx !== -1) {
+                    rows[rowIdx].data = [...editedData];
+                }
+                
+                editingRow = null;
+                editedData = [];
+                renderTable();
+                alert('✅ 儲存成功！');
+            } catch (error) {
+                console.error('Save error:', error);
+                alert('❌ 儲存失敗: ' + error.message);
+            }
+        }
+    </script>
+</body>
+</html>
